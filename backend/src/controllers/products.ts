@@ -8,7 +8,10 @@ import product from '../models/product';
 export const getProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const products = await product.find({});
-    res.status(200).json(products);
+    res.status(200).json({
+      items: products,
+      total: products.length,
+    });
   } catch (error) {
     next(new InternalServerError('Ошибка при получении продуктов'));
   }

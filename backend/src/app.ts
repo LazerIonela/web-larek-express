@@ -6,26 +6,29 @@ import path from 'path';
 import router from './routes/index';
 import errorHandler from './middlewares/error-handler';
 import {errorLogger, requestLogger} from '../src/middlewares/logger';
+import dotenv from 'dotenv';
+import {errors} from 'celebrate';
 
-const { PORT, DB_ADDRESS = 'mongodb://127.0.0.1:27017/weblarek'} = process.env;
+dotenv.config();
+const {PORT, DB_ADDRESS} = process.env;
 const app = express();
 
-app.listen(PORT, () => {
-  console.log('Server running at 3000');
-});
-
-app.use(requestLogger);
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(requestLogger);
 app.use(router);
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(errors());
 app.use(errorLogger);
 app.use(errorHandler);
 
 mongoose
-  .connect(DB_ADDRESS)
+  .connect(DB_ADDRESS || 'mongodb://127.0.0.1:27017/weblarek')
   .then(() => {
     console.log('MongoDB connected successfully!');
+    app.listen(PORT, () => {
+  console.log('Server running at',PORT);
+});
   })
   .catch(() => {
     console.error('Connection error');
