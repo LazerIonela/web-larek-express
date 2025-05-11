@@ -1,14 +1,14 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-export type IProduct = {
+export interface IProduct extends Document {
     title: string;
-    image: {fileName: string, originelName: string};
+    image: {fileName: string, originalName: string};
     category: string;
     description?: string;
     price?: number | null;
 }
 
-const productSchema = new Schema({
+const productSchema = new Schema<IProduct>({
   title: {
     type: String,
     required: true,
