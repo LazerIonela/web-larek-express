@@ -35,7 +35,7 @@ export const postProduct = async (req: Request, res: Response, next: NextFunctio
     if (error instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(error.message));
     }
-    if (error instanceof Error && error.message.includes('E11000')) {
+    if ((error as any)?.code === 11000 || (error instanceof Error && error.message.includes('E11000'))) {
       return next(new ConflictError('Продукт уже существует'));
     }
   }
