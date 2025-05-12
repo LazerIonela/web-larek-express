@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { Error as MongooseError } from 'mongoose';
 import BadRequestError from '../errors/bad-request-error';
 import InternalServerError from '../errors/internal-server-error';
+import ConflictError from '../errors/conflict-error';
 import product from '../models/product';
 
 export const getProduct = async (_req: Request, res: Response, next: NextFunction) => {
@@ -29,13 +30,13 @@ export const postProduct = async (req: Request, res: Response, next: NextFunctio
       price,
     });
 
-    res.status(201).json({ message: 'Продукт успешно добавлен', _id: newProduct._id });
+    res.status(201).json({ _id: newProduct._id, message: 'Продукт успешно добавлен' });
   } catch (error) {
     if (error instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(error.message));
     }
     if (error instanceof Error && error.message.includes('E11000')) {
-      return res.status(409).json({ message: 'Продукт уже существует' });
+      return next(new ConflictError('Продукт уже существует'));
     }
   }
   return next(new InternalServerError('Ошибка сервера'));

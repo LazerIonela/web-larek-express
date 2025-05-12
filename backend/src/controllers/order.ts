@@ -9,6 +9,9 @@ import Product from '../models/product';
 export const postOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { items, total } = req.body;
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return next(new BadRequestError('Поле items обязательно и должно содержать хотя бы один товар'));
+    }
 
     const products = await Product.find({ _id: { $in: items } });
 
