@@ -9,7 +9,7 @@ import Product from '../models/product';
 export const postOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { items } = req.body;
-    if (!items || !Array.isArray(items) || items.length === 0) {
+    if (!Array.isArray(items) || items.length === 0) {
       return next(new BadRequestError('Поле items обязательно и должно содержать хотя бы один товар'));
     }
 
@@ -18,17 +18,14 @@ export const postOrder = async (req: Request, res: Response, next: NextFunction)
     if (products.length !== items.length) {
       return next(new NotFoundError('Продукты не найдены'));
     }
-    const totalSum = products.reduce((sum, product) => {
-      if (product.price == null) {
-        throw new BadRequestError(`Product ${product._id} не имеет цены`);
-      }
-      return sum + product.price;
-    }, 0);
 
-    const isDuplicate = await Product.findOne({ title: req.body.title });
-    if (isDuplicate) {
-      return res.status(409).json({ message: 'Продукт уже существует' });
+    const productWithoutPrice = products.find((product) => product.price == null);
+    if (productWithoutPrice) {
+      return next(new BadRequestError(`Продукт с ID ${productWithoutPrice._id} не имеет цены`));
     }
+
+    const totalSum = products.reduce((sum, product) => sum + product.price!, 0);
+
     const orderId = faker.string.uuid();
 
     return res.status(200).json({
@@ -40,9 +37,10 @@ export const postOrder = async (req: Request, res: Response, next: NextFunction)
       return next(new BadRequestError(error.message));
     }
     if (error instanceof Error && error.message.includes('E11000')) {
-      return next(new InternalServerError(error.message));
+      return next(new InternalServerError('дублика данных'));
     }
     return next(new InternalServerError('ошибка сервера'));
   }
 };
+
 export default postOrder;
