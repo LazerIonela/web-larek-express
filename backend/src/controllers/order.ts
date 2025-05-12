@@ -8,7 +8,7 @@ import Product from '../models/product';
 
 export const postOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { items, total } = req.body;
+    const { items } = req.body;
     if (!items || !Array.isArray(items) || items.length === 0) {
       return next(new BadRequestError('Поле items обязательно и должно содержать хотя бы один товар'));
     }
@@ -25,10 +25,10 @@ export const postOrder = async (req: Request, res: Response, next: NextFunction)
       return sum + product.price;
     }, 0);
 
-    if (totalSum !== total) {
-      return next(new BadRequestError('Ошибка расчета'));
+    const isDuplicate = await Product.findOne({ title: req.body.title });
+    if (isDuplicate) {
+      return res.status(409).json({ message: 'Продукт уже существует' });
     }
-
     const orderId = faker.string.uuid();
 
     return res.status(200).json({
