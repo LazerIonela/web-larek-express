@@ -2,15 +2,18 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import path from 'path';
-// import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import { errors } from 'celebrate';
 import router from './routes/index';
 import errorHandler from './middlewares/error-handler';
-import {errorLogger, requestLogger} from '../src/middlewares/logger';
-import dotenv from 'dotenv';
-import {errors} from 'celebrate';
+import { errorLogger, requestLogger } from './middlewares/logger';
 
 dotenv.config();
-const {PORT, DB_ADDRESS} = process.env;
+const {
+  PORT = 3000,
+  DB_ADDRESS = 'mongodb://localhost:27017/weblarek',
+} = process.env;
+
 const app = express();
 
 app.use(cors());
@@ -23,15 +26,14 @@ app.use(errorLogger);
 app.use(errorHandler);
 
 mongoose
-  .connect(DB_ADDRESS || 'mongodb://127.0.0.1:27017/weblarek')
+  .connect(DB_ADDRESS)
   .then(() => {
-    console.log('MongoDB connected successfully!');
     app.listen(PORT, () => {
-  console.log('Server running at',PORT);
-});
+      // console.log(`MongoDB connected successfully at ${PORT}!`);
+    });
   })
   .catch(() => {
-    console.error('Connection error');
+    // console.error('Connection error');
   });
 
-export default app
+export default app;
