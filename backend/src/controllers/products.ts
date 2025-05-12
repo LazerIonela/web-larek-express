@@ -30,14 +30,14 @@ export const postProduct = async (req: Request, res: Response, next: NextFunctio
       price,
     });
 
-    res.status(201).json({ _id: newProduct._id, message: 'Продукт успешно добавлен' });
-  } catch (error) {
+    return res.status(201).json({ _id: newProduct });
+  } catch (error: any) {
     if (error instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(error.message));
     }
-    if ((error as any)?.code === 11000 || (error instanceof Error && error.message.includes('E11000'))) {
+    if (error.code === 11000 || (error instanceof Error && error.message.includes('E11000'))) {
       return next(new ConflictError('Продукт уже существует'));
     }
+    return next(new InternalServerError('Ошибка сервера'));
   }
-  return next(new InternalServerError('Ошибка сервера'));
 };
