@@ -29,14 +29,14 @@ export const postProduct = async (req: Request, res: Response, next: NextFunctio
       price,
     });
 
-    res.status(201).json({ message: 'Продукт успешно добавлен', product: newProduct });
+    res.status(201).json({ message: 'Продукт успешно добавлен', _id: newProduct._id });
   } catch (error) {
     if (error instanceof MongooseError.ValidationError) {
       return next(new BadRequestError(error.message));
     }
     if (error instanceof Error && error.message.includes('E11000')) {
-      return next(new InternalServerError(error.message));
+      return res.status(409).json({ message: 'Продукт уже существует' });
     }
   }
-  return (Error);
+  return next(new InternalServerError('Ошибка сервера'));
 };

@@ -28,7 +28,7 @@ export const postOrder = async (req: Request, res: Response, next: NextFunction)
 
     const orderId = faker.string.uuid();
 
-    return res.status(201).json({
+    return res.status(200).json({
       id: orderId,
       total: totalSum,
     });
@@ -39,7 +39,7 @@ export const postOrder = async (req: Request, res: Response, next: NextFunction)
     if (error instanceof Error && error.message.includes('E11000')) {
       return next(new InternalServerError(error.message));
     }
-    return (error);
+    return next(new InternalServerError('ошибка сервера'));
   }
 };
 export default postOrder;
